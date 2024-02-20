@@ -1,0 +1,207 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## **Overhand and Underhand Paper Ball Throws: Assessing Techniques at Varied Distances** 
+
+ In this experiment, i investigate the effectiveness of two distinct throwing techniques---overhand and underhand---in achieving successful paper ball tosses into a bin. The experiment is structured to compare these techniques across three different distances: 5 feet, 7 feet, and 10 feet.
+
+### 
+
+Sample Size Calculation:
+
+![Sample Size Calculation](images/Picture1.png){width="705" height="182"}
+
+Given the parameters established from prior research, the experimental design requires a minimum of 32 trials for each throwing technique---overhand and underhand---to reliably detect a significant difference in success rates, presumed to be 60% and 90% respectively. This sample size ensures an 80% power to discern the anticipated difference with a 5% level of significance. 
+
+However, I limited the total sample size to 30 trials overall.
+
+### **Planning an Experiment:** 
+
+The Cross Over Design was chosen for the experiment where the subject was matched to itself. The subject was its own control. The Completely Randomized Design (CRD) was used to fix the number of units in advance. Five throws were performed using the overhand method and five throws using the underhand method from 5 feet away from the bin. The experiment was repeated for the other distance of 7 feet and 10 feet. The predominate hand of the subject was used for the whole duration of the experiment. The experiment was executed by one subject (myself) so that there was control for the strength of the throw, how the paper ball was toss and for the surrounding environment of where the experiment was performed. 
+
+### **Executing an experiment:** 
+
+The experiment was executed using an 8.5-inch by 11-inch paper that was crumbled up into a ball and is thrown into a bin from three different distances: 5 feet, 7 feet, and 10 feet. A measuring tape was used to ensure the accuracy of the distance between the starting line of where the subject should stand from the bin. The paper ball was thrown into the bin using two different throwing methods: overhand and underhand. A sample size of 30 was collected for the experiment.  
+
+By looking at the raw data from the experiment, the outcome results showed that as the distance increased, the number of paper balls making it into the bin decreased. Also, there were several occurrences when the paper balls were aimed at the bin but when it was release from the hand, instead of going straight, it had either landed to the far right or left of the bin. Therefore, the angle and strength of the throw seem to also influence the outcome.
+
+### **Load the Data:**
+
+```{r}
+#Import file
+setwd('C:/Users/jaira/OneDrive/Desktop/experiments')
+paper = read.csv('Experiment_Throwing paper.csv')
+head(paper)
+```
+
+1.  **Run** (Integer): This column represent the sequence or number of each trial or throw in the experiment. It's a unique identifier for each observation.
+
+2.  **Outcome** (Integer): This column indicate the outcome of each throw. It is a binary variable, representing success (1) or failure (0) for each throw.
+
+3.  **Method** (Character): This column describes the throwing technique used for each throw. It's a categorical variable, and it have two categories: "overhand" and "underhand."
+
+4.  **Distance** (Integer): This column represents the distance from which each throw was made. It's a numerical variable representing the distance in feet.
+
+    **Treatment**: The throwing technique (overhand or underhand) used .
+
+    **Response**: The outcome of each throw (success or failure) and potentially how it relates to the distance of the throw.
+
+    ### **Hypothesis:**
+
+    The effectiveness of throwing a paper ball into a bin differs between overhand and underhand throwing techniques at varying distances (5 feet, 7 feet, and 10 feet). Specifically, one of the throwing techniques (either overhand or underhand) will be more successful than the other at different distances. 
+
+### **Outcome Variable:**
+
+Success of throw: Measured as a binary outcome (1 for success, 0 for failure).
+
+```{r}
+# Convert Outcome to a factor 
+paper$Outcome <- as.factor(paper$Outcome)
+
+```
+
+```{r}
+table(paper$Outcome)
+```
+
+The table shows that "Failure" appears 20 times in the column, while "Success" appears 10 times.
+
+### **Visualization:**
+
+```{r}
+
+library(ggplot2)
+# Create a plot
+ggplot(paper, aes(x = Distance, fill = Outcome)) +
+  geom_bar(position = "dodge", stat = "count") +
+  facet_wrap(~ Method) +
+  scale_fill_manual(values = c("pink", "violet")) +
+  labs(title = "Outcome by Throwing Technique and Distance",
+       x = "Distance (feet)",
+       y = "Count of Throws",
+       fill = "Outcome") +
+  theme_minimal()
+```
+
+Created a bar chart with the count of throws at each distance, separated by the outcome (successful or not) and faceted by the throwing method. The fill color differentiates the outcome, where violet for success and pink for failure.
+
+**Key Observations**:
+
+-   At 5 feet, the underhand technique had a perfect success rate, better than the overhand technique.
+
+-   At 7 feet, both techniques had the same low success rate, with failures being more common.
+
+-   At 10 feet, success rates for both techniques dropped, with the underhand technique having no successes at all.
+
+    ### **Factors Influencing Outcome Variable**
+
+    -   **Factors**:
+
+        -   *Throwing Technique*: Overhand vs. underhand. Measured by observing and categorizing each throw.
+
+        -   *Distance*: Varies at 5 feet, 7 feet, and 10 feet. Measured by marking distances from the target.
+
+        -   *Thrower's Skill*: Skill level of the individual performing the throw. This could be gauged through a pre-experiment skill assessment, though it may not be explicitly measured in the experiment.
+
+    -   **Expected Influence**:
+
+        -   *Throwing Technique*: Different techniques might affect accuracy and success rates.
+
+        -   *Distance*: Greater distances may reduce success rates due to increased difficulty.
+
+        -   *Thrower's Skill*: More skilled throwers are likely to have higher success rates.
+
+    -   **Interactions**:
+
+        -   An interaction between the throwing technique and distance is possible. For example, overhand might be more effective at longer distances, or vice versa.
+
+    ### **4. Confounders**
+
+    -   **Potential Confounders**:
+
+        -   *Strength and Endurance of the Thrower*: When the experiment is performed multiple times, the strength and accuracy a thrower has at the start may not be the same in subsequent throws. This variation can occur due to subtle changes in muscle endurance and energy levels.
+
+    -   **Control Strategies**:
+
+        -   *Strength and Endurance*: Acknowledge this potential variabiylit as a limitation of the home-based experimental setup. While it may not be feasible to control for this in a home environment, but it is important to consider as possible influence on the results.
+
+### Running Analysis:
+
+For McNemar's test, we'll need a contingency table that compares the success rates between overhand and underhand throws for each distance.
+
+So, I created separate contingency tables for each distance (5 feet, 7 feet, 10 feet). Each table shows the counts of successful and unsuccessful throws for both overhand and underhand methods.
+
+```{r}
+
+# Subset data for 5 feet distance
+data_5_feet <- subset(paper, Distance == 5)
+
+# Create a contingency table
+#  'success' is coded as 1 and 'failure' as 0
+table_5_feet <- with(data_5_feet, table(Method, Outcome))
+
+table_5_feet
+```
+
+```{r}
+#mcnemar test for 5 feet distance
+mcnemar_test_5_feet <- mcnemar.test(table_5_feet)
+print(mcnemar_test_5_feet)
+
+
+```
+
+```{r}
+# Subset data for 7 feet distance
+data_7_feet <- subset(paper, Distance == 7)
+
+# Create a contingency table
+# 'success' is coded as 1 and 'failure' as 0
+table_7_feet <- with(data_7_feet, table(Method, Outcome))
+
+table_7_feet
+```
+
+```{r}
+#mcnemar test for 7 feet distance
+mcnemar_test_7_feet <- mcnemar.test(table_7_feet)
+print(mcnemar_test_7_feet)
+```
+
+```{r}
+# Subset data for 10 feet distance
+data_10_feet <- subset(paper, Distance == 10)
+
+# Create a contingency table
+# 'success' is coded as 1 and 'failure' as 0
+table_10_feet <- with(data_10_feet, table(Method, Outcome))
+
+table_10_feet
+```
+
+```{r}
+
+#mcnemar test for 10 feet distance
+mcnemar_test_10_feet <- mcnemar.test(table_10_feet)
+print(mcnemar_test_10_feet)
+```
+
+### **Interpretation:**
+
+For all three distances (5 feet, 7 feet, and 10 feet), the p-values are greater than the common significance level of 0.05.
+
+This suggests that there is no statistically significant difference in the success rates between overhand and underhand throwing techniques at 5 feet, 7 feet, and 10 feet.
+
+**Conclusion**:
+
+Overall, the results suggest that, within the confines of the experiment, the choice of throwing technique does not have a significant impact on the likelihood of successfully throwing paper balls into a bin at the specified distance.
+
+**Considerations for Future Studies:**
+
+-   **Sample Size:** A larger sample size might provide more power to detect a statistically significant difference if one exists.
+
+-   **Interaction Effects:** While there might not be a significant difference in techniques at each individual distance, there could still be significant interaction effects (e.g., one technique might perform relatively better or worse at increasing distances). As for interactions, we could explore the following combinations: 
+
+    -   **Technique-Distance Interaction**: For instance, it's possible that the overhand technique might be more effective at shorter distances while the underhand technique might perform better at longer distances, or vice versa. This interaction term would explore if the effectiveness of the throwing technique (overhand vs. underhand) changes at different distances. It could reveal, for instance, whether the overhand technique is more effective at shorter distances but less effective at longer distances compared to the underhand technique. 
